@@ -1,0 +1,68 @@
+\vspace{-2em}
+Our goal is to model, predict, and analyze user behavior based on gaze direction in scenarios in which we can determine head/eye orientation, such as through a VR or AR environment. Specifically, we use knowledge of where the user looks to generate a behavior graph consisting of various behaviors such as looking at an object, being interested in the object (e.g. predicted trajectory), paying attention to a certain detail (e.g. a training surgeon carefully assembling the surgical bench), etc. Based on the graph, we analyze patterns in user behavior and improve the design of VR/AR system accordingly.
+
+We imagine several possible use-cases: \vspace{-1em}
+\begin{description}[noitemsep]
+    \item[Adaptive Impaired-user Keyboards] If some symbols on a virtual keyboard are harder to use than others, or are more often used together, re-arrange the layout to correspond to the users needs. Since many of these are joystick-input based, the user's gaze can help identify what symbol they are looking for. Some users with mobility impairments may also want to select an item by blinking, speaking, etc. This task could prove important because different disabilities require different customized keyboards to comfortably type.
+    \item[Surgical Training] Surgical students can learn from the difference between the steps they are taking and the steps that need to be taken. For example, if a student's job is to organize and clean tools for a surgery, we can use eye-tracking and logs from the realtime application to generate a behavior graph (pushdown automata-style) and determine if they are missing important steps or glossing over details.
+    \item[Dynamic Robot AI] The AI can better determine how to respond to user behavior, such as in the case of a robot guide dog pulling users towards their object of interest. For example, the dog should realize when a VR user is too close to a wall, and try to guide them away.
+\end{description}
+
+%%%%% NEED GOAL HERE %%%%%
+%Goals???
+
+% METHOD
+
+%TODO
+%What exactly are the methods that you propose to explore? This should include a plan of baseline simple methods, existing methods, and extensions/modifications.
+\vspace{-1em}
+We use a built-in eye tracker in the Magic Leap for 3D gaze detection and Unreal Engine 4 to get ground truth object information and for feedback to the user through a realtime simulation. Through casting the ray from the eyes, we can trivially learn what they are looking at in a game engine, and for the sake of an initial simulation, the objects of interest need not be physical; they can be augmented.
+
+
+
+
+%Existing methods: 
+
+Eye tracking in Head-mounted displays (HMD) developed rapidly in recent years\cite{cognolato2018head}. The MagicLeap One, an AR headset with a built-in eye-tracker, has recently gained some traction as one of few headmounts with such a device built-in and calibrated. Object recognition enhanced by eye tracking also has been researched in \cite{toyama2012gaze, wolf2018automating}. \cite{martin2018dynamics} proposed specific descriptions drawn from the scanpath of gaze direction (e.g. a set of lines describing the trajectory of where the user looks) for later behavior modeling during maneuvers executed in freeway driving. There are examples from recent papers of extracting objects of interest from a surgical environment and behavior graphs separately, but to our knowledge, a merge of the two ideas is not found in the context of a practical application. 
+
+Our approach is novel in that we (1) automatically generate a ground truth object of interest with a realtime AR simulation in a game engine allowing raycasting (Python/C++/UE4), (2) reduce the amount of computation required to recognize the object of interest because we only require the section of the image that the user is looking at (e.g. if using a 110 FOV display, if the eye focuses within a 10 degree section, limit object detection to that section), (3) automatically generates a behavior graph merging actions taken and objects of interest gathered through gaze, and (4) works in the context of practical applications to find real benefits of analyzing an automatically-generated behavior graph. We would need to generate data sets by first building synthetic AI users in the game engine, then adding real, average people, then focusing on the target audience (impaired or surgical students). There are many areas to be evaluated, such as the quality of eye-tracking, quality of object recognition relative to game engine-generated ground truth, speed of recognition, how well behavior graph predicts areas of difficulty, how it responds to randomness, etc. Our approach may be limited by quality of eye-tracking, the quality/applicability of our datasets, and the limitations of formalizing random user behaviors into features. We also require the user to wear an AR HMD.
+%As extensions, 
+
+
+%Contributions??????
+
+
+% DATASET
+
+%TODO
+%What datasets will you consider? Have a plan for generating synthetic data where the ground truth is known.
+
+%We will generate synthetic data via the Unreal Engine and highly randomized users; the availability of ray-casting enables identification of the precise target of the user's gaze at any moment, providing stable ground-truth data.
+%What real-world datasets will you try? (Are there existing benchmarks?)
+%Since there are no current real datasets relating to our specific tasks, we plan to capture our own real dataset by hiring impaired-users and surgical students.
+
+% EVALUATION
+
+%TODO
+%What will your evaluation criteria be? (This may not be obvious.) 
+%Have a quantitative score, even if it is only a proxy for a score that one would truly want.
+
+
+%If there are qualitative scores that you will consider, then describe a systematic, unbiased way that you will obtain them.
+
+% CHALLENGES
+
+%TODO
+%What are the challenges and possible drawbacks of your proposed directions?
+
+%Our project may be limited by accuracy of eye tracking, quality of the datasets as well as the ability of extracting features from estimated behavior graphs.
+
+
+% IMPLEMENTATION
+
+%TODO
+%What framework/language will things be implemented in?
+%This project will be implemented mainly in Python and C++.
+
+
+%Is there an existing library that you will base your code on? (This is probably a good idea if possible.)
