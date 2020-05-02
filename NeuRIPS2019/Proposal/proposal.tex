@@ -25,7 +25,9 @@
 \usepackage{amsfonts}       % blackboard math symbols
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
-\usepackage{enumitem}
+\usepackage[inline]{enumitem}
+\newlist{inlist}{enumerate*}{1}
+\setlist[inlist]{label= (\arabic*)}
 \title{COMP 755 Midway Report}
 
 \author{%
