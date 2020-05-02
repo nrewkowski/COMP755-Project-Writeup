@@ -1,9 +1,13 @@
 \section{Methods}
 
-The system used for this project is a pipeline consisting of synthetic image
-data collection, automatic creation of ground truth labels, intermediate image
-processing, training, and finally, image recognition during a real-time
-application.
+The system used for this project is a pipeline consisting of
+\begin{inlist}
+\item synthetic image data collection,
+\item automatic creation of ground truth labels,
+\item intermediate image processing,
+\item training, and
+\item image recognition during a real-time application.
+\end{inlist}
 
 \subsection{Synthetic Data}
 
@@ -16,13 +20,15 @@ easily record real data in this scenario given both the tediousness of doing so
 and our quarantine.
 
 Much like how \emph{UnityEyes} renders eye images very quickly using a
-real-time game engine, we use Unreal Engine 4 (UE4) to render
+real-time game engine, we used Unreal Engine 4 (UE4) to render
 \begin{inlist}
 \item camera images of the eyes,
-\item camera images from the front-facing camera approximate the user's entire field of view, and
+\item
+    camera images from the front-facing camera approximate the user's entire
+    field of view, and
 \item ground truth labels for what object the user is looking at.
 \end{inlist}
-We choose UE4 for a few reasons:
+We chose UE4 for a few reasons:
 
 \begin{itemize}[leftmargin=*,noitemsep]
     \item
@@ -42,37 +48,43 @@ We choose UE4 for a few reasons:
         interaction, etc.
 \end{itemize}
 
-We use free, high-quality architectural visualization (archviz) scenes for UE4
+We used free, high-quality architectural visualization (archviz) scenes for UE4
 such as ``Realistic Rendering'' which contains many environmental objects with
 clear, intuitive boundaries for the rendering of the user viewpoint and
 labelling of focused objects. The objects in this scene include vases, books,
 furniture, paintings, and plants. They are labelled as such in the default
-scene. For the eye-facing camera images, we use Adobe Mixamo's character
+scene. For the eye-facing camera images, we used Adobe Mixamo's character
 collection to handle different eye and body shapes and materials. These
-characters most importantly include blendshapes allowing us to make them blink
-naturally during data collection, which would also affect real data. The
-limitation of these characters is that their materials such as are not highly
-detailed and some detailed facial features like accurate wrinkles on the eyelids
-are missing. Examples of what the images generated look like can be found in the
+characters most importantly include blendshapes, which allowed us to make them
+blink naturally during data collection, more wholly resembling real data. The
+limitation of these characters is that their materials are not highly detailed
+and some detailed facial features like accurate wrinkles on the eyelids are
+missing. Examples of what the generated images look like can be found in the
 supplemental material.
 
 \subsection{Automatically Generating Ground Truth Labels}
 
 An important feature of real-time game engines is native and efficient support
-for raycasts, which are functions that shoot rays from one point to another,
-returning all objects hit by the ray as well as hit location, hit normal, hit
-polygon, etc. These allow for the automatic deduction of what a camera is
-looking at. In the case of our eye-tracking setup, the MagicLeap One gives the
-3D point that the users' eyes converge on, thus, we can raycast from the
-front-facing camera location to this point of convergence and return the first
-object hit in order to estimate what the user is looking at.
+for raycasts. Raycasts are functions that shoot rays from one point to another,
+returning
+\begin{inlist}
+\item all objects hit by the ray as well as hit location,
+\item hit normal,
+\item hit polygon,
+\item etc.
+\end{inlist}
+These allow for the automatic deduction of what a camera is looking at. In the
+case of our eye-tracking setup, the MagicLeap One gave the 3D point that the
+users' eyes converge on; thus, we raycasted from the front-facing camera
+location to this point of convergence and returned the first object hit to
+estimate the object being looked at by the user.
 
-In order to generate the required dataset, we define a 3D ``scanpath''
+In order to generate the required dataset, we defined a 3D ``scanpath''
 describing the trajectory of the user's gaze that spans all of the objects in
-the scene and eventually causes the character's body to turn 360 degrees. For
-each Mixamo character, their eyes follow the scanpath and for each frame (at
-60fps), we generate the eye-facing images, the front-facing camera image, and
-the label for what the raycast hit during that frame. It currently takes 2
+the scene and eventually causing the character's body to turn 360 degrees. For
+each Mixamo character, their eyes followed the scanpath and for each frame (at
+60fps), we generated the eye-facing images, the front-facing camera image, and
+the label for what the raycast hit during that frame. It currently took 2
 minutes for the character to make the full rotation as this scene is relatively
 small; we plan on adding more complexity later. For future data collection, we
 may randomly select objects to look at in the 3D environment to avoid the manual
@@ -80,42 +92,75 @@ placement of scanpaths which can be a limiting factor in larger scenes.
 
 \subsection{Intermediate Image Processing}
 
-This intermediate step occurs between the synthetic data generation and training
+This intermediate step occurred between the synthetic data generation and training
 because networks like Inception V3 were not intended to handle more than 1 image
 per label, e.g., they would not understand the relationship between the eye
-camera and front-facing camera images. Thus, during this step, we crop the
-object in focus such that the image's boundaries only span that object, allowing
-for a lower-res image with a single primary object, meeting our objective of
-simplifying the inputs to the image recognition network. For potential
-comparisons that we make, this step could also be used to do post-processing
-such as defocusing the parts of the image not being focused on (e.g., applying
-Gaussian blur to anything outside the object bounds) instead of cropping the
-object of interest. This is similar to how foveated depth-of-field works; a more
-recent method in AR/VR in which depth-of-field is applied automatically based on
-eye-tracking.
+camera and front-facing camera images. The goals here were to
+\begin{inlist}
+\item simplify inputs to the image recognition network and to
+\item incorporate information learned from the user's gaze.
+\end{inlist}
+We explored 2 techniques (cropping and Gaussian blur) to do so.
+
+\paragraph{Cropping}
+
+One way to limit the complexity of input images and simultaneously incorporate
+gaze information is to crop the eye-camera image to the boundaries of the object
+being gazed at. This simplification allows for a lower-resolution image with a
+single primary object (and label), meeting our two objectives. We hypothesized
+that networks such as Inception would perform stronger and more quickly on such
+cropped inputs than on traditional, more complex inputs that lack this gaze
+information because of the reduced complexity and smaller number of objects per
+image.
+
+All input images must still maintain the same input dimensions, so this cropping
+must be done carefully with that in mind.
+
+% more details on how we cropped here
+
+\paragraph{Gaussian Blur}
+
+Another technique to constrain the inputs and incorporate gaze information is to
+apply a Gaussian blur to the image. This technique simulates overlaying a
+2-dimensional Gaussian distribution on the image, centered on the focal point of
+the user's gaze. Variance is computed as a function of the object's size.
+Regions of low probability mass are blurred heavily, while regions of high
+probability mass are blurred correspondingly less.\footnote{This is similar to
+how foveated depth-of-field works. Foveated depth-of-field is a more recent
+method in AR/VR in which depth-of-field is applied automatically based on
+eye-tracking.} This has the net effect of blurring the objects the user is not
+looking at and leaving the target object in focus. The resulting image provides
+a mostly clear picture of the target object. We hypothesized that networks such
+as Inception would perform stronger and more quickly on such blurred inputs than
+on traditional, more complex inputs that lack this gaze information because any
+other objects in the image become less recognizable, while the primary objects
+stays in focus.
+
+% more details and any math/equations here
 
 \subsection{Training \& Recognition}
 
-The training and recognition part involves using the popular Inception V3
+The training and recognition step involved using the popular Inception V3
 network to recognize the primary object in the images given to the network.
 Since the game engine generated the labels automatically, the ground truth
-labels were retrieved easily and are given to the network as with any other use
-of this network. Beyond that, this part is fairly standard image recognition and
+labels were retrieved easily and were given to the network as with any other use
+of this network. Beyond that, this step was fairly standard image recognition and
 details of Inception V3 are better found in that network's API\@.
 
+% should this move to future work?
 \subsection{Testing with a Real-time Application}
 
-During a real-time MagicLeap application, if training is successful, we should
-only require the images from the front-facing camera and eye-tracking camera,
-which can be merged in the intermediate image processing step and given to
-Inception V3 for prediction. The 3D scene from the game engine would no longer
-be required and it is even possible that a different, less bulky HMD besides the
-MagicLeap could be used as long as it contains the necessary cameras (e.g.,
-embedded Raspberry Pi cameras).
+During a real-time MagicLeap application, we should only require the images from
+the front-facing camera and eye-tracking camera, which can be merged in the
+intermediate image processing step and given to Inception V3 for prediction. The
+3D scene from the game engine would no longer be required, and it is even
+possible that a different, less bulky HMD (besides the MagicLeap) could be used
+as long as it contains the necessary cameras (e.g., embedded Raspberry Pi
+cameras).
 
 In order to help validate the ability of the system to work on real-world camera
-images, in order to get the correct labels for the objects of interest, it would
-be easiest to align some virtual objects to the real objects in order to use
-raycasts for automatic labelling. This alignment can be done automatically with
-image marker-tracking libraries that work natively with the MagicLeap and
+images, and in order to get the correct labels for the objects of interest, it
+would be easiest to align some virtual objects to the real objects in order to
+use raycasts for automatic labelling. This alignment can be done automatically
+with image marker-tracking libraries that work natively with the MagicLeap and
 Hololens such as OpenCV and Vuforia.
