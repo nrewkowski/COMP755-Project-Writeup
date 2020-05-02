@@ -4,62 +4,73 @@
 Over the last few years, virtual reality (VR) and augmented reality (AR)
 technologies demonstrate the potential to effect the way we live and work.
 Understanding user behavior in VR/AR is very important for both creating
-contents and adapting them to different user models. In this paper, we use
-knowledge of where the user looks to first detect the objects, and then
-understand various behaviors such as looking at an object, being interested in
-the object (e.g., predicted trajectory), paying attention to a certain detail
-(e.g., a training surgeon carefully assembling the surgical bench), etc.
+content and adapting to different user models. In this paper, we use
+knowledge of where the user looks to detect objects and
+understand various user behaviors such as
+\begin{inlist}
+\item looking at an object,
+\item being interested in the object (e.g., predicted trajectory), or
+\item
+    paying attention to a certain detail (e.g., a training surgeon carefully
+    assembling the surgical bench).
+\end{inlist}
 
 %%%%% Background of object detection + our work
 Currently, object detection and eye tracking are both well-understood problems.
 State-of-the-art methods unanimously employ variants of convolutional neural
-networks (CNN). A number of object detectors~\cite{redmon2016you, liu2016ssd,
+networks (CNNs). A number of object detectors~\cite{redmon2016you, liu2016ssd,
 lin2017focal, girshick2014rich, girshick2015fast, ren2015faster, he2017mask}
-achieve incredible results on large-scale benchmarks. However, they designed to
-recognize low-res data in a large search space relying on a deep neural network
-with a high memory capacity requirement. In order to achieve a more accurate and
-fast version on VR/AR platform, we propose a novel gaze-guided object detection
-method that first tracks gaze with a built-in eye-tracker in Magicleap and then
-segment and detect the focused object with a smaller neural network.
+achieve incredible results on large-scale benchmarks. These networks are
+designed to recognize low-resolution data in a large search space, relying on a
+deep neural network with a high memory capacity requirement. In order to achieve
+a more accurate and performant version on VR/AR platforms, we propose a novel
+gaze-guided object detection method that first tracks gaze with a built-in
+eye-tracker in Magicleap and then segments and detects the focused object with a
+smaller neural network.
 
 To decrease time cost as well as collection difficulty, we generate a huge
-synthetic dataset including both eye images and scene images in a AR
-environment. Game engines, which are capable of aligning real and virtual world
+synthetic dataset including both eye images and scene images in an AR
+environment. Game engines, which are capable of aligning real and virtual worlds
 with markers, can provide the ground truth of focused point without the need for
 manual labelling. From this, we can move on to more complex scenarios and use
-such labelling for tasks such as generation of behavioral graphs and other
+such labelling for tasks such as generation of behavioral graphs or other
 modern trends. Some use cases that motivated this project include:
 
-\begin{description}[noitemsep]
+\begin{description}
     \item[Adaptive Impaired-user Keyboards]
         If some symbols on a virtual keyboard are harder to use than others, or
-        are more often used together, re-arrange the layout to correspond to the
-        users needs. Since many of these are joystick-input based, the user's
-        gaze can help identify what symbol they are looking for. Some users with
-        mobility impairments may also want to select an item by blinking,
-        speaking, etc. This task could prove important because different
-        disabilities require different customized keyboards to comfortably type.
-    \item[Surgical Training] Surgical students can learn from the difference
-        between the steps they are taking and the steps that need to be taken.
-        For example, if a student's job is to organize and clean tools for a
-        surgery, we can use eye-tracking and logs from the real-time application
-        to generate a behavior graph (push-down automata-style) and determine if
-        they are missing important steps or glossing over details.
+        are used frequently together, re-arranging the layout to correspond to
+        the user's needs may improve typing experience. Since some of these are
+        joystick-input based and therefore further slow user's typing rate, the
+        user's gaze can identify what symbol they are typing and aid the user in
+        selecting it. Some users with mobility impairments may also want to
+        select an item by blinking, speaking, or other means. Improvements in
+        this area (such as via faster object detection based on gaze, as in this
+        paper) could prove important because different disabilities require
+        different customized keyboards for comfortable typing.
+    \item[Surgical Training]
+        Surgical students learn from the difference between the steps they take
+        and the correct steps. For example, if a student's job is to organize
+        and clean tools for a surgery, we can use eye-tracking and logs from the
+        real-time application to generate a behavior graph (push-down
+        automata-style) and determine if they are missing important steps or
+        glossing over details.
     \item[Dynamic Robot AI]
-        The AI can better determine how to respond to user behavior, such as in
-        the case of a robot guide dog pulling users towards their object of
-        interest. For example, the dog should realize when a VR user is too
-        close to a wall, and try to guide them away.
+        AI assisted by object recognition and behavioral understanding can
+        better determine how to respond to user actions, such as in the case of
+        a robot guide dog pulling users towards their object of interest. For
+        example, the dog should realize when a VR user is too close to a wall
+        and try to guide them away.
 \end{description}
 
 %%%%% Contribution
-Our main contributions can be summarized as follow:
+Our main contributions can be summarized as follows:
 
-\begin{itemize}[leftmargin=*,noitemsep]
+\begin{itemize}
     \item
         We automatically generate a ground truth object of interest with a
-        realtime AR simulation in a game engine allowing raycasting
-        (Python/C++/UE4).
+        real-time AR simulation in a game engine allowing raycasting
+        (using Python, C++, and the Unreal Engine).
     \item
         We introduce a more efficient method of integrating object detection
         with eye tracking that reduces the amount of computation.
@@ -67,10 +78,8 @@ Our main contributions can be summarized as follow:
         We evaluate both detection methods with and without eye tracking and
         demonstrate that our method compares favorably against detection methods
         without eye tracking.
-    \item
-        We apply our gaze-guided object detection on specific AR applications
-        for user behavior understanding.
+    % perhaps we only discuss this, given the timeline?
+    % \item
+    %     We apply our gaze-guided object detection on specific AR applications
+    %     for user behavior understanding.
 \end{itemize}
-
-
-
