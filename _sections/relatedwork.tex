@@ -3,7 +3,7 @@
 %doesn't know where to look. also neurips, iccv, cvpr, etc. are filled with fake
 %papers so nick's not confident in their results anyway
 
-\paragraph{Eye tracking}
+\subsection{Eye tracking}
 
 Eye tracking is defined as the process of identifying the line of sight for each
 eye of a human user at a single instant~\cite{kim2019nvgaze}. In this work, we
@@ -20,7 +20,17 @@ to train a neural network to output the final gaze~\cite{zhang2015appearance,
 schneider2014manifold, sugano2014learning}. A hybrid of those three methods has
 also been explored in~\cite{kim2019nvgaze, wang2018hierarchical}.
 
-\paragraph{Image Recognition}
+Vision-based tracking is important for real-world real-time applications, where
+the information available for decision-making is likely to consist only of
+representations of the eye. Our focus is not to further improve eye-tracking
+accuracy but to explore the integration of eye-tracking information (such as
+might be gathered by the kinds of vision-based trackers described above) into
+image recognition systems. We thus explored primarily the use of a novel kind of
+synthetic dataset (see Section~\ref{S:synthetic-dataset} and
+Section~\ref{S:synthetic-generation}) that simulates gaze and computes
+automatically the coordinates and objects gazed at.
+
+\subsection{Image Recognition}
 
 Image recognition is fundamentally the problem of analysing image data to
 recognize a part of the image. Usual tasks include recognizing or classifying
@@ -58,7 +68,14 @@ smoothing, which enables training high quality networks using only a modest
 sized training set. Inception uses input dimensions of \(299 \times 299\), which
 results in a feature-space of dimension 268203.
 
-\paragraph{Object detection}
+While investigating the integration of eye-tracking data with image recognition,
+we focussed on maintaining similar or better recognition performance while
+improving computational complexity and speed. We hypothesized that some methods
+of integrating eye-tracking information result in stronger gains than others,
+and these gains are important to real-time applications, which are heavily
+constrained.
+
+\subsection{Object detection}
 
 Current object detection approaches can be categorized into one-stage
 approaches~\cite{redmon2016you, liu2016ssd, lin2017focal} and two-stage
@@ -74,12 +91,12 @@ When considering deployment in several resource-constrained platforms, such as
 VR/AR HMD with memory limitations and high frame rate requirements, both methods
 are still far from practical use. To solve this issue, we integrate object
 detection with eye tracking to accelerate performance and reduce network
-capacity by decreasing the search space. Some related work~\cite{toyama2012gaze,
+capacity by decreasing the search space. Some related works~\cite{toyama2012gaze,
 ishiguro2010aided, bonino2009blueprint} also combine these two tasks, but they
 either do not provide an evaluation of the benefits of using eye tracking or
 require a collection of all exhibits with static backgrounds.
 
-\paragraph{Synthetic eye dataset}
+\subsection{Synthetic eye dataset}\label{S:synthetic-dataset}
 
 Previous research showed that synthetic eye dataset relieves the eye-tracking
 research community from manual data collection and data labeling.
@@ -90,3 +107,6 @@ anatomically-informed eye and face models.
 eye images with a wide range of head poses, gaze directions, and illumination
 conditions. As a follow-up work, \emph{UnityEyes}~\cite{wood2016learning}
 provides a 200-times faster solution to generating large numbers of images.
+
+
+We explore our novel dataset generation in Section~\ref{S:synthetic-generation}.

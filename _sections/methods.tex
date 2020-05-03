@@ -9,7 +9,7 @@ The system used for this project is a pipeline consisting of
 \item image recognition during a real-time application.
 \end{inlist}
 
-\subsection{Synthetic Data}
+\subsection{Synthetic Data}\label{S:synthetic-generation}
 
 While there are existing datasets of eyes for eye-tracking research, their
 purpose is significantly different from ours and generally only include labels
@@ -30,11 +30,11 @@ real-time game engine, we used Unreal Engine 4 (UE4) to render
 \end{inlist}
 We chose UE4 for a few reasons:
 
-\begin{itemize}[leftmargin=*,noitemsep]
+\begin{itemize}
     \item
         It has a strong physically-based rendering (PBR) system allowing for
         much more realistic materials to be used than Unity and with better
-        performance
+        performance (in terms of time-to-compile and render)
     \item
         It natively supports ray-tracing and cone-tracing allowing for more
         accurate eye reflections (which heavily impact eye-tracking quality in
@@ -108,15 +108,18 @@ One way to limit the complexity of input images and simultaneously incorporate
 gaze information is to crop the eye-camera image to the boundaries of the object
 being gazed at. This simplification allows for a lower-resolution image with a
 single primary object (and label), meeting our two objectives. We hypothesized
-that networks such as Inception would perform stronger and more quickly on such
-cropped inputs than on traditional, more complex inputs that lack this gaze
-information because of the reduced complexity and smaller number of objects per
-image.
+that networks such as Inception would classify equally accurately or better and
+do so more quickly or with less computational complexity on such cropped inputs
+than on traditional, more complex inputs without gaze information because of the
+reduced complexity and smaller number of objects per image.
 
 All input images must still maintain the same input dimensions, so this cropping
 must be done carefully with that in mind.
 
 % more details on how we cropped here
+For each original image, we created two cropped images; one has dimensions
+of \(\frac{1}{2}\) of the original, while the other has dimensions
+\(\frac{1}{3}\).
 
 \paragraph{Gaussian Blur}
 
@@ -131,12 +134,21 @@ method in AR/VR in which depth-of-field is applied automatically based on
 eye-tracking.} This has the net effect of blurring the objects the user is not
 looking at and leaving the target object in focus. The resulting image provides
 a mostly clear picture of the target object. We hypothesized that networks such
-as Inception would perform stronger and more quickly on such blurred inputs than
-on traditional, more complex inputs that lack this gaze information because any
-other objects in the image become less recognizable, while the primary objects
-stays in focus.
+as Inception would classify equally accurately or better and do so more quickly
+on such blurred inputs than on traditional, more complex inputs without gaze
+information because any other objects in the image become less recognizable,
+while the primary objects stays in focus.
 
 % more details and any math/equations here
+% TODO what are these heights relative to? The object or the image?
+For each original image, we created two blurred images. Each uses a ``circular''
+2-dimensional Gaussian (i.e., the 2 dimensions are independent and \(\Sigma =
+\sigma I\) for some scaling factor \(\sigma\)). One uses \(\sigma =
+\frac{\text{height}}{2}\), while the other uses \(\frac{\text{height}}{3}\).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% If we need information on foveation, we can do it here and \cite{Wang_2016}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Training \& Recognition}
 
@@ -146,21 +158,3 @@ Since the game engine generated the labels automatically, the ground truth
 labels were retrieved easily and were given to the network as with any other use
 of this network. Beyond that, this step was fairly standard image recognition and
 details of Inception V3 are better found in that network's API\@.
-
-% should this move to future work?
-\subsection{Testing with a Real-time Application}
-
-During a real-time MagicLeap application, we should only require the images from
-the front-facing camera and eye-tracking camera, which can be merged in the
-intermediate image processing step and given to Inception V3 for prediction. The
-3D scene from the game engine would no longer be required, and it is even
-possible that a different, less bulky HMD (besides the MagicLeap) could be used
-as long as it contains the necessary cameras (e.g., embedded Raspberry Pi
-cameras).
-
-In order to help validate the ability of the system to work on real-world camera
-images, and in order to get the correct labels for the objects of interest, it
-would be easiest to align some virtual objects to the real objects in order to
-use raycasts for automatic labelling. This alignment can be done automatically
-with image marker-tracking libraries that work natively with the MagicLeap and
-Hololens such as OpenCV and Vuforia.

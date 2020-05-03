@@ -6,3 +6,32 @@
 
 \subsection{Future work}
 % directions to explore
+
+\subsubsection{Testing with a Real-time Application}
+
+One direction to explore would be to verify current results in real-time
+applications, where computational complexity and speed matter due to the
+constraints of the applications. We mentioned several possible applications in
+the introduction, including
+\begin{inlist}
+\item adaptive impaired-user keyboards,
+\item surgical training, and
+\item dynamic robot AI\@.
+\end{inlist}
+Ultimately, these applications will also benefit from behavioral graph analysis
+or generation, another motivating factor of our work.
+
+During a real-time MagicLeap application, we should only require the images from
+the front-facing camera and eye-tracking camera, which can be merged in the
+intermediate image processing step and given to Inception V3 for prediction. The
+3D scene from the game engine would no longer be required, and it is even
+possible that a different, less bulky HMD (besides the MagicLeap) could be used
+as long as it contains the necessary cameras (e.g., embedded Raspberry Pi
+cameras).
+
+In order to help validate the ability of the system to work on real-world camera
+images, and in order to get the correct labels for the objects of interest, it
+would be easiest to align some virtual objects to the real objects in order to
+use raycasts for automatic labelling. This alignment can be done automatically
+with image marker-tracking libraries that work natively with the MagicLeap and
+Hololens such as OpenCV and Vuforia.
