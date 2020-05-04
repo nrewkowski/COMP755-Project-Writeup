@@ -25,7 +25,7 @@ designed to recognize low-resolution data in a large search space, relying on a
 deep neural network with a high memory capacity requirement. In order to achieve
 a more accurate and performant version on VR/AR platforms, we propose a novel
 gaze-guided object detection method that first tracks gaze with a built-in
-eye-tracker in Magicleap and then segments and detects the focused object with a
+eye-tracker in the MagicLeap One and then segments and detects the focused object with a
 smaller neural network.
 
 To decrease time cost as well as collection difficulty, we generated a huge
@@ -66,11 +66,13 @@ modern trends. Some use cases that motivated this project include:
 %%%%% Contribution
 Our main contributions can be summarized as follows:
 
-\begin{itemize}
+\begin{itemize}  [noitemsep]
     \item
         We automatically generate a ground truth object of interest with a
-        real-time AR simulation in a game engine allowing raycasting
+        real-time AR simulation in a game engine using raycasting
         (using Python, C++, and the Unreal Engine).
+    \item
+        We develop a system to generate large, physically-based synthetic image datasets with labels within minutes for future eye-tracking research using currently or formerly free Unreal 4 assets.
     \item
         We introduce a more efficient method of integrating object detection
         with eye tracking that reduces the amount of computation.
@@ -81,6 +83,6 @@ Our main contributions can be summarized as follows:
 \end{itemize}
 
 Code for synthetic generation can be found
-\href{https://github.com/nrewkowski/COMP755FinalProject}{\textcolor{cyan}{here}},
+\textbf{\href{https://github.com/nrewkowski/COMP755FinalProject}{\textcolor{cyan}{here}}},
 and code for evaluation can be found
-\href{https://github.com/FloralZhao/Comp755Project}{\textcolor{cyan}{here}}.
+\textbf{\href{https://github.com/FloralZhao/Comp755Project}{\textcolor{cyan}{here}}}.

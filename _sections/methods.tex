@@ -14,96 +14,99 @@ The system used for this project is a pipeline consisting of
 While there are existing datasets of eyes for eye-tracking research, their
 purpose is significantly different from ours and generally only include labels
 such as eye rotation; to our knowledge, such a dataset does not exist which
-labels the object of interest. Thus, for this project, we must generate
+labels the object of interest. Thus, for this project, we generated
 synthetic data ourselves. We require synthetic data as we would not be able to
 easily record real data in this scenario given both the tediousness of doing so
-and our quarantine.
+and our quarantine. Additionally, PBR-based synthetic data is promising in that graphical features such as post-processing, particle effects, and dynamic materials can significantly improve our ability to stress test machine learning models, especially those with computer vision applications. Augmenting graphical datasets is non-trivial with real, non-RGBD datasets as a true understanding of the 3D environment is often ambiguous or computationally expensive to solve, meaning synthetic datasets generated from 3D virtual environments (VEs) are also often an optimization in the learning process.
 
-Much like how \emph{UnityEyes} renders eye images very quickly using a
-real-time game engine, we used Unreal Engine 4 (UE4) to render
-\begin{inlist}
-\item camera images of the eyes,
-\item
-    camera images from the front-facing camera approximate the user's entire
-    field of view, and
-\item ground truth labels for what object the user is looking at.
-\end{inlist}
-We chose UE4 for a few reasons:
-
+Much like how \emph{UnityEyes} \cite{???} renders eye images very quickly using the Unity game engine, we used Unreal Engine 4 (UE4) to generate large datasets consisting of:
+\begin{itemize}
+\item Images from the front-facing camera which may be used to approximate the user's field of view. This is not always a fair assumption, as it does not factor in peripherals, depth-of-field, etc., and the AR HMD's camera may not be directly between the user's eyes (although the MagicLeap's camera is), but we leave this area of image processing as future work; 
+\item Information about where the eye is focusing with respect to the image (in pixels), which is used for our eye-gaze-based optimizations;
+\item Ground truth labels for what object the user is looking at, to be used for generation of behavior graphs and testing the network
+\item The frame at which the observation was made, which can be used in future work for an RNN/LSTM to be able to make stronger temporal predictions of behavior similar to model predictive control \cite{???}.
+\end{itemize}
+We choose UE4 for a few reasons:
 \begin{itemize}
     \item
         It has a strong physically-based rendering (PBR) system allowing for
         much more realistic materials to be used than Unity and with better
-        performance (in terms of time-to-compile and render)
+        performance (in terms of time-to-compile and render). PBR also allows for strong features such as randomization of material qualities between users of the material, time-based material processing (e.g. flowing lava can be described as a single PBR material), and more realistic reflections which can be augmented with ray-tracing.
     \item
         It natively supports ray-tracing and cone-tracing allowing for more
         accurate eye reflections (which heavily impact eye-tracking quality in
-        real life) and more accurate environmental reflections in general
+        real life) and more accurate environmental reflections in general. In traditional Phong-based rendering (such as what Unity is optimized for and uses by default), reflections are not possible as Phong materials can only describe an unrealistic glossiness.
     \item
         It supports C++, allowing interaction with image recognition libraries
-        such as NVIDIA's
+        such as NVIDIA's and the many C and C++ libraries that power highly-optimized Python libraries like numpy. It also has a proprietary high-level, node-based language called Blueprint which is a powerful tool for dynamic animation and other state machine-based behaviors, such as the task-following of a virtual agent.
     \item
         NVIDIA, a major name in deep neural networks in general, has much
         stronger experimental features for UE4 such as CUDA, geometry
-        interaction, etc.
+        interaction, PhysX mesh processing, APEX particle processing (including cloth and liquids), etc.
 \end{itemize}
 
-We used free, high-quality architectural visualization (archviz) scenes for UE4
-such as ``Realistic Rendering'' which contains many environmental objects with
-clear, intuitive boundaries for the rendering of the user viewpoint and
-labelling of focused objects. The objects in this scene include vases, books,
-furniture, paintings, and plants. They are labelled as such in the default
-scene. For the eye-facing camera images, we used Adobe Mixamo's character
-collection to handle different eye and body shapes and materials. These
-characters most importantly include blendshapes, which allowed us to make them
-blink naturally during data collection, more wholly resembling real data. The
-limitation of these characters is that their materials are not highly detailed
-and some detailed facial features like accurate wrinkles on the eyelids are
-missing. Examples of what the generated images look like can be found in the
-supplemental material.
+We used currently or formerly free, high-quality, 3D scenes found in the UE4 marketplace which contain a mix of photorealistic and stylistic "props," or static 3D objects placed in the VEs.
+
+The following scenes are used as each overall scenario into which to place the 3D objects for recognition (with their dataset name bolded, which also encodes the UE4 marketplace link):
+\begin{itemize}
+    \item Realistic Rendering (\textbf{\href{https://unrealengine.com/learn/realistic-rendering}{\textcolor{cyan}{realisticrendering}}}). This is a realistic living room scene with good natural lighting and a simple layout, making it a good option.
+    \item House (\textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/hq-residential-house}{\textcolor{cyan}{house}}}) (housemaster, housekitchen, houseden, etc.). This is a large, 2-story residential house. We use the following 3 sub-environments:
+    \begin{enumerate}
+        \item Den (\textbf{houseden}). This scene is similar to realisticrendering but with a more common layout and furniture, as well as a partial view into the kitchen which is useful for testing if the network accidentally recognizes objects that are outside of the den.
+        \item Kitchen (\textbf{housekitchen}). This section focuses on an L-shaped kitchen countertop consisting of dishware, microwave, sink, toaster, cutlery, window blinds, etc. It has a good contrast between objects that are big or small in image space. 
+        \item Master Bedroom (\textbf{housemaster}). This bedroom scene contains items like sidetables, a bed, chairs, TV, TV remote, books, lamps, etc. It is one of the bigger residential environments, with some normally big objects like blinds being far from the camera, thus small in image space.
+    \end{enumerate}
+    \item Cartoony Village (\textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/advanced-village-pack}{\textcolor{cyan}{cartoonyvillage}}}). This is a highly stylized village consisting of a few houses, mushrooms, well, fences, pumpkins, apples, torches, flowers, buckets, wheels, etc. Stylized scenes are often a challenge for neural networks due to overfitting on only real data, but a robust network should be able to recognize stylized but recognizable versions of objects as well, since we as humans can.
+    \item Realistic Village (\textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/fantasy-and-medieval-artchitecture-kit}{\textcolor{cyan}{realisticvillage}}}). This is a more realistic, medieval village scene containing similar objects to the cartoony village. For future work, comparing the cartoony and realistic results would give us a better sense of how robust the network is to style.
+    \item Warehouse (\textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/megascans-abandoned-factory}{\textcolor{cyan}{warehouse}}}). This is a photoscanned scene of an abandoned factory/warehouse, which is a strong source of data for a few reasons. It contains particle effects like smoke, which are more realistic but are likely to hurt predictions, which the network should be able to handle. There is also a lot of visual clutter, such as many stacked garbage bags, broken pipes and wooden palettes, dumpsters, etc. which let us stress-test the strength of the segmentation. Finally, since the scene is photoscanned, thus generated directly from real data, it is arguably the strongest synthetic dataset since images generated from it will be visually closest to the kind of data Inception was trained on. It also means that additional props should blend in better. 
+    \item Ocean (\textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/ocean-floor-environment}{\textcolor{cyan}{ocean}}}). This is the bottom of the ocean, with fish swimming around and moving sea fauna. This is a good stress test because it is an unnatural environment to see the intended props in, there is a lot of visual clutter due to the colorful sea fauna, there are many visual effects imposed by the water and refractive lighting effects, and finally, the abundance of motion would be an interesting test for any future work on using an RNN/LSTM to make temporal predictions.
+\end{itemize}
+
+The following sets of props are also used to generate data, either as their own dataset, or to be randomly placed in an above scene for augmentation and stress testing the recognition
+\begin{itemize}
+    \item \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/toolshed-garage-props-vol-1-hand-tools-clamps-etc}{\textcolor{cyan}{Tools}}}. These props include many small tools like screwdrivers, hammers, spraycans, clamps, saws, etc. that should benefit from the cropping.
+    \item \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/food-pack}{\textcolor{cyan}{Food}}}. This includes pizza, donuts, many fruits like pineapples, apples, and pears, and many vegetables like carrots, corn, and cabbage. It is another good source of small, croppable objects, and this dataset seems to have the most label correspondences with ImageNet, since ImageNet mainly focuses on types of animals, food, and plants.
+    \item \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/construction-site-vol-1-supply-and-material-props}{\textcolor{cyan}{Construction Site 1}}} and \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/construction-site-vol-2-tools-parts-and-machine-props}{\textcolor{cyan}{Construction Site 2}}}. These include bigger construction props like power tools (jackhammer, power saw, etc.), traffic cones, roadblocks, shovels, wheelbarrows, etc. They provide a good contrast to the smaller tools set, and these should benefit more from NOT cropping, as cropping these as much as the tools will make them unrecognizable.
+    \item \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/hq-residential-house}{\textcolor{cyan}{House appliances}}} and \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/a4907129f69c44a892f76782489736ab}{\textcolor{cyan}{furniture}}}. These sets include objects seen around houses, making them a good augmentation to the residential scenes above. There is also a strong contrast in size and recognizability between different types of couches versus objects like plates.
+\end{itemize}
 
 \subsection{Automatically Generating Ground Truth Labels}
 
 An important feature of real-time game engines is native and efficient support
-for raycasts. Raycasts are functions that shoot rays from one point to another,
+for raycasts, which are functions that shoot rays from one point to another,
 returning
 \begin{inlist}
-\item all objects hit by the ray as well as hit location,
+\item all objects hit by the ray as well as:
+\item hit location,
 \item hit normal,
 \item hit polygon,
 \item etc.
 \end{inlist}
 These allow for the automatic deduction of what a camera is looking at. In the
-case of our eye-tracking setup, the MagicLeap One gave the 3D point that the
+case of our intended eye-tracking setup, the MagicLeap One gives the 3D point that the
 users' eyes converge on; thus, we raycasted from the front-facing camera
 location to this point of convergence and returned the first object hit to
-estimate the object being looked at by the user.
+estimate the object being looked at by the user. We use complex collisions for raycasts, which test the object bounds exactly as defined in their mesh definition, as opposed to convex hulls, which are rough approximation meshes which wrap around the true mesh and fulfill convexity requirements that are commonly used for optimizations in collision detection. This is important for ground truth labelling and handling arbitrarily-shaped objects, which may not be well-approximated by a convex mesh.
 
-In order to generate the required dataset, we defined a 3D ``scanpath''
+In order to generate the required dataset, we define a 3D ``scanpath'' in each scene
 describing the trajectory of the user's gaze that spans all of the objects in
-the scene and eventually causing the character's body to turn 360 degrees. For
-each Mixamo character, their eyes followed the scanpath and for each frame (at
-60fps), we generated the eye-facing images, the front-facing camera image, and
-the label for what the raycast hit during that frame. It currently took 2
-minutes for the character to make the full rotation as this scene is relatively
-small; we plan on adding more complexity later. For future data collection, we
-may randomly select objects to look at in the 3D environment to avoid the manual
-placement of scanpaths which can be a limiting factor in larger scenes.
+the scene and eventually causing the character's body to turn 360 degrees. The scanpath is defined manually (although could be generated automatically with a list of intended objects to focus on) using a cubic Bezier spline, which is natively supported in UE4. This process is the reverse of the typical eye-tracking goal, which is normally to find the scanpath itself from images instead of the other way around. Using built-in spline functions in UE4, we get the 3D position on the scanpath towards which the eye should focus for that frame, apply a random rotation in (pitch, yaw, roll) to the camera orientation from (-20,20) degrees to simulate the independent movement of eye and head, and then use a built-in function to project the scanpath point onto the image plane to find the 2D position of the focal point in image space. Each frame is then rendered to a folder, and the goal position on the scanpath is pushed forward by some amount, until the end of scanpath is finally reached. For most scenes, it takes around 3 minutes to generate the entire dataset of typically 1000 480x480px frames.
+
+To generate the labels, we store a translation table describing the correspondence from prop to a simplified label (some of which to not exist in ImageNet; these would be for future use or for other datasets) to an ImageNet label (if one exists). In most cases, the props' filenames contain some substring of the label used in ImageNet, otherwise, the table also contains exceptions, including props that we do not want to label at all for whatever reason. For props that contain multiple labels in their name (e.g. "SM\_Pineapple" includes both "apple" and "pineapple"), we use the label that has more matching letters, which we assume to be a better description (if not, an exception entry is created). This precomputation of pairings, substrings, etc. is done once per compile of our data generator script in UE4, adding only about 3 seconds to compile time. There is a small amount of manual labor involved in making entries to this table, but after this is done for the first time, most (meaning usually hundreds of) props are auto-labelled correctly in any new scene with props that are named decently well. We currently store 175 entries in this table, including exceptions, which translate thousands of different meshes in the synthetic data generation project to labels.
 
 \subsection{Intermediate Image Processing}
 
 This intermediate step occurred between the synthetic data generation and training
 because networks like Inception V3 were not intended to handle more than 1 image
 per label, e.g., they would not understand the relationship between the eye
-camera and front-facing camera images. The goals here were to
+camera and front-facing camera images and how both are used to generate a label. They are also not meant to accurately recognize more than one primary object in the image, which poses a problem if the "primary" object of interest is the same size or smaller than other objects in the 2D image space.
+The goals here were to
 \begin{inlist}
 \item simplify inputs to the image recognition network and to
 \item incorporate information learned from the user's gaze.
 \end{inlist}
 We explored 2 techniques (cropping and Gaussian blur) to do so.
-
 \paragraph{Cropping}
-
 One way to limit the complexity of input images and simultaneously incorporate
 gaze information is to crop the eye-camera image to the boundaries of the object
 being gazed at. This simplification allows for a lower-resolution image with a
@@ -119,7 +122,7 @@ must be done carefully with that in mind.
 % more details on how we cropped here
 For each original image, we created two cropped images; one has dimensions
 of \(\frac{1}{2}\) of the original, while the other has dimensions
-\(\frac{1}{3}\).
+\(\frac{1}{3}\). At the moment, these crop values only represent a relatively small set of the entire range of possible object scales, and for future work, a method such as YOLO would be better suited to automatically find the necessary crop value. For example, YOLO can generate bounding boxes for all sections of the image that it assumes are unique objects, and we can find which of these boxes intersect with the eye focus point to have a better estimate of the scale value. Further steps would be required to handle overlaps, especially if the smaller object being focused on is in front of a much bigger but recognizable object.
 
 \paragraph{Gaussian Blur}
 
@@ -129,15 +132,15 @@ apply a Gaussian blur to the image. This technique simulates overlaying a
 the user's gaze. Variance is computed as a function of the object's size.
 Regions of low probability mass are blurred heavily, while regions of high
 probability mass are blurred correspondingly less.\footnote{This is similar to
-how foveated depth-of-field works. Foveated depth-of-field is a more recent
-method in AR/VR in which depth-of-field is applied automatically based on
-eye-tracking.} This has the net effect of blurring the objects the user is not
+how foveated depth-of-field (DoF) works. Foveated DoF is a more recent
+method in AR/VR in which DoF is applied automatically based on
+eye-tracking, defocussing parts of the image that should be in the peripheral and addressing the vergence-accommodation conflict in AR/VR optics/displays.} This has the net effect of blurring the objects the user is not
 looking at and leaving the target object in focus. The resulting image provides
 a mostly clear picture of the target object. We hypothesized that networks such
 as Inception would classify equally accurately or better and do so more quickly
 on such blurred inputs than on traditional, more complex inputs without gaze
 information because any other objects in the image become less recognizable,
-while the primary objects stays in focus.
+while the primary objects stays in focus. Thus, if the network does happen to predict an non-focused object, it can only do so with low confidence.
 
 % more details and any math/equations here
 % TODO what are these heights relative to? The object or the image?
@@ -145,16 +148,14 @@ For each original image, we created two blurred images. Each uses a ``circular''
 2-dimensional Gaussian (i.e., the 2 dimensions are independent and \(\Sigma =
 \sigma I\) for some scaling factor \(\sigma\)). One uses \(\sigma =
 \frac{\text{height}}{2}\), while the other uses \(\frac{\text{height}}{3}\).
-
+\vspace{-1em}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % If we need information on foveation, we can do it here and \cite{Wang_2016}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \subsection{Training \& Recognition}
-
-The training and recognition step involved using the popular Inception V3
+The training and recognition step involves using the popular Inception V3
 network to recognize the primary object in the images given to the network.
-Since the game engine generated the labels automatically, the ground truth
+Since the game engine generates the labels automatically, the ground truth
 labels were retrieved easily and were given to the network as with any other use
-of this network. Beyond that, this step was fairly standard image recognition and
+of this network, with the additional step of translating from the simplified labels to whatever the particular dataset, e.g. ImageNet, uses. Beyond that, this step was fairly standard image recognition and
 details of Inception V3 are better found in that network's API\@.
