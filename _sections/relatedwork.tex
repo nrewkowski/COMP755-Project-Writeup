@@ -94,7 +94,8 @@ detection with eye tracking to accelerate performance and reduce network
 capacity by decreasing the search space. Some related works~\cite{toyama2012gaze,
 ishiguro2010aided, bonino2009blueprint} also combine these two tasks, but they
 either do not provide an evaluation of the benefits of using eye tracking or
-require a collection of all exhibits with static backgrounds.  CHABRA 2020 \cite{???}
+require a collection of all exhibits with static backgrounds. For the training process, works such as \cite{chabra2020deep} augment the dataset with extremely random shapes to force their networks to make stronger local predictions, which they find beneficial for the reconstruction of small or thin 3D objects and which may benefit this eye-tracking work when making predictions on small objects in image space.
+\vspace{-0.5em}
 
 \subsection{Synthetic eye dataset}\label{S:synthetic-dataset}
 
@@ -106,7 +107,5 @@ anatomically-informed eye and face models.
 \emph{SynthesEyes}~\cite{wood2015rendering} samples 11.4 thousand photorealistic
 eye images with a wide range of head poses, gaze directions, and illumination
 conditions. As a follow-up work, \emph{UnityEyes}~\cite{wood2016learning}
-provides a 200-times faster solution to generating large numbers of images.
-
-
-We explore our novel dataset generation in Section~\ref{S:synthetic-generation}.
+provides a 200-times faster solution to generating large numbers of images. We explore our novel dataset generation in Section~\ref{S:synthetic-generation}.
+\vspace{-0.5em}

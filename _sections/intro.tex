@@ -36,43 +36,43 @@ manual labelling. From this, we can move on to more complex scenarios and use
 such labelling for tasks such as generation of behavioral graphs or other
 modern trends. Some use cases that motivated this project include:
 
-\begin{description}
+\begin{description}[leftmargin=*]
     \item[Adaptive Impaired-user Keyboards]
-        If some symbols on a virtual keyboard are harder to use than others, or
-        are used frequently together, re-arranging the layout to correspond to
-        the user's needs may improve typing experience. Since some of these are
-        joystick-input based and therefore further slow user's typing rate, the
-        user's gaze can identify what symbol they are typing and aid the user in
-        selecting it. Some users with mobility impairments may also want to
-        select an item by blinking, speaking, or other means. Improvements in
-        this area (such as via faster object detection based on gaze, as in this
-        paper) could prove important because different disabilities require
-        different customized keyboards for comfortable typing.
+    If some symbols on a virtual keyboard are harder to use than others, or
+    are used frequently together, re-arranging the layout to correspond to
+    the user's needs may improve typing experience. Since some of these are
+    joystick-input based and therefore further slow user's typing rate, the
+    user's gaze can identify what symbol they are typing and aid the user in
+    selecting it. Some users with mobility impairments may also want to
+    select an item by blinking, speaking, or other means. Improvements in
+    this area (such as via faster object detection based on gaze, as in this
+    paper) could prove important because different disabilities require
+    different customized keyboards for comfortable typing.
     \item[Surgical Training]
-        Surgical students learn from the difference between the steps they take
-        and the correct steps. For example, if a student's job is to organize
-        and clean tools for a surgery, we can use eye-tracking and logs from the
-        real-time application to generate a behavior graph (push-down
-        automata-style) and determine if they are missing important steps or
-        glossing over details.
+    Surgical students learn from the difference between the steps they take
+    and the correct steps. For example, if a student's job is to organize
+    and clean tools for a surgery, we can use eye-tracking and logs from the
+    real-time application to generate a behavior graph (push-down
+    automata-style) and determine if they are missing important steps or
+    glossing over details.
     \item[Dynamic Robot AI]
-        AI assisted by object recognition and behavioral understanding can
-        better determine how to respond to user actions, such as in the case of
-        a robot guide dog pulling users towards their object of interest. For
-        example, the dog should realize when a VR user is too close to a wall
-        and try to guide them away.
+    AI assisted by object recognition and behavioral understanding can
+    better determine how to respond to user actions, such as in the case of
+    a robot guide dog pulling users towards their object of interest. For
+    example, the dog should realize when a VR user is too close to a wall
+    and try to guide them away.
 \end{description}
-
+\vspace{-0.5em}
 %%%%% Contribution
 Our main contributions can be summarized as follows:
-
-\begin{itemize}  [noitemsep]
+\vspace{-0.5em}
+\begin{itemize}  [noitemsep,leftmargin=*]
     \item
         We automatically generate a ground truth object of interest with a
         real-time AR simulation in a game engine using raycasting
         (using Python, C++, and the Unreal Engine).
     \item
-        We develop a system to generate large, physically-based synthetic image datasets with labels within minutes for future eye-tracking research using currently or formerly free Unreal 4 assets.
+        We develop a system to generate large, photorealistic, labelled synthetic image datasets within minutes for future eye-tracking research using currently/formerly free Unreal 4 assets.
     \item
         We introduce a more efficient method of integrating object detection
         with eye tracking that reduces the amount of computation.
@@ -81,8 +81,9 @@ Our main contributions can be summarized as follows:
         demonstrate that our method compares favorably against detection methods
         without eye tracking.
 \end{itemize}
-
-Code for synthetic generation can be found
-\textbf{\href{https://github.com/nrewkowski/COMP755FinalProject}{\textcolor{cyan}{here}}},
-and code for evaluation can be found
-\textbf{\href{https://github.com/FloralZhao/Comp755Project}{\textcolor{cyan}{here}}}.
+\vspace{-0.5em}
+Code for synthetic generation can be found in 
+\textbf{\href{https://github.com/nrewkowski/COMP755FinalProject}{\textcolor{cyan}{this}}} documented repo, the currently working datasets are \textbf{\href{https://drive.google.com/open?id=1u3nhJQRcSctHzwoECYRtkN0MXC4qqPQq}{\textcolor{cyan}{here}}},
+and code for evaluation/prediction is in
+\textbf{\href{https://github.com/FloralZhao/Comp755Project}{\textcolor{cyan}{this}}} documented repo.
+\vspace{-0.5em}

@@ -19,15 +19,15 @@ synthetic data ourselves. We require synthetic data as we would not be able to
 easily record real data in this scenario given both the tediousness of doing so
 and our quarantine. Additionally, PBR-based synthetic data is promising in that graphical features such as post-processing, particle effects, and dynamic materials can significantly improve our ability to stress test machine learning models, especially those with computer vision applications. Augmenting graphical datasets is non-trivial with real, non-RGBD datasets as a true understanding of the 3D environment is often ambiguous or computationally expensive to solve, meaning synthetic datasets generated from 3D virtual environments (VEs) are also often an optimization in the learning process.
 
-Much like how \emph{UnityEyes} \cite{???} renders eye images very quickly using the Unity game engine, we used Unreal Engine 4 (UE4) to generate large datasets consisting of:
-\begin{itemize}
+Much like how \emph{UnityEyes} \cite{wood2016learning} renders eye images very quickly using the Unity game engine, we used Unreal Engine 4 (UE4) to generate large datasets consisting of:
+\begin{itemize}[noitemsep,leftmargin=*]
 \item Images from the front-facing camera which may be used to approximate the user's field of view. This is not always a fair assumption, as it does not factor in peripherals, depth-of-field, etc., and the AR HMD's camera may not be directly between the user's eyes (although the MagicLeap's camera is), but we leave this area of image processing as future work; 
 \item Information about where the eye is focusing with respect to the image (in pixels), which is used for our eye-gaze-based optimizations;
 \item Ground truth labels for what object the user is looking at, to be used for generation of behavior graphs and testing the network
-\item The frame at which the observation was made, which can be used in future work for an RNN/LSTM to be able to make stronger temporal predictions of behavior similar to model predictive control \cite{???}.
+\item The frame at which the observation was made, which could potentially be used for an RNN to be able to make stronger temporal predictions of behavior similar to model predictive control \cite{garcia1989model,pan2011model}.
 \end{itemize}
 We choose UE4 for a few reasons:
-\begin{itemize}
+\begin{itemize}[noitemsep,leftmargin=*]
     \item
         It has a strong physically-based rendering (PBR) system allowing for
         much more realistic materials to be used than Unity and with better
@@ -48,7 +48,7 @@ We choose UE4 for a few reasons:
 We used currently or formerly free, high-quality, 3D scenes found in the UE4 marketplace which contain a mix of photorealistic and stylistic "props," or static 3D objects placed in the VEs.
 
 The following scenes are used as each overall scenario into which to place the 3D objects for recognition (with their dataset name bolded, which also encodes the UE4 marketplace link):
-\begin{itemize}
+\begin{itemize}[noitemsep,leftmargin=*]
     \item Realistic Rendering (\textbf{\href{https://unrealengine.com/learn/realistic-rendering}{\textcolor{cyan}{realisticrendering}}}). This is a realistic living room scene with good natural lighting and a simple layout, making it a good option.
     \item House (\textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/hq-residential-house}{\textcolor{cyan}{house}}}) (housemaster, housekitchen, houseden, etc.). This is a large, 2-story residential house. We use the following 3 sub-environments:
     \begin{enumerate}
@@ -63,12 +63,14 @@ The following scenes are used as each overall scenario into which to place the 3
 \end{itemize}
 
 The following sets of props are also used to generate data, either as their own dataset, or to be randomly placed in an above scene for augmentation and stress testing the recognition
-\begin{itemize}
+\begin{itemize}[noitemsep,leftmargin=*]
     \item \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/toolshed-garage-props-vol-1-hand-tools-clamps-etc}{\textcolor{cyan}{Tools}}}. These props include many small tools like screwdrivers, hammers, spraycans, clamps, saws, etc. that should benefit from the cropping.
     \item \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/food-pack}{\textcolor{cyan}{Food}}}. This includes pizza, donuts, many fruits like pineapples, apples, and pears, and many vegetables like carrots, corn, and cabbage. It is another good source of small, croppable objects, and this dataset seems to have the most label correspondences with ImageNet, since ImageNet mainly focuses on types of animals, food, and plants.
     \item \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/construction-site-vol-1-supply-and-material-props}{\textcolor{cyan}{Construction Site 1}}} and \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/construction-site-vol-2-tools-parts-and-machine-props}{\textcolor{cyan}{Construction Site 2}}}. These include bigger construction props like power tools (jackhammer, power saw, etc.), traffic cones, roadblocks, shovels, wheelbarrows, etc. They provide a good contrast to the smaller tools set, and these should benefit more from NOT cropping, as cropping these as much as the tools will make them unrecognizable.
     \item \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/hq-residential-house}{\textcolor{cyan}{House appliances}}} and \textbf{\href{https://www.unrealengine.com/marketplace/en-US/product/a4907129f69c44a892f76782489736ab}{\textcolor{cyan}{furniture}}}. These sets include objects seen around houses, making them a good augmentation to the residential scenes above. There is also a strong contrast in size and recognizability between different types of couches versus objects like plates.
 \end{itemize}
+
+Versions of the scenes that contain a random selection of random props are appended with \textbf{\_extraprops}. The original versions are appended with \textbf{\_noextraprops}.
 
 \subsection{Automatically Generating Ground Truth Labels}
 
@@ -90,7 +92,7 @@ estimate the object being looked at by the user. We use complex collisions for r
 
 In order to generate the required dataset, we define a 3D ``scanpath'' in each scene
 describing the trajectory of the user's gaze that spans all of the objects in
-the scene and eventually causing the character's body to turn 360 degrees. The scanpath is defined manually (although could be generated automatically with a list of intended objects to focus on) using a cubic Bezier spline, which is natively supported in UE4. This process is the reverse of the typical eye-tracking goal, which is normally to find the scanpath itself from images instead of the other way around. Using built-in spline functions in UE4, we get the 3D position on the scanpath towards which the eye should focus for that frame, apply a random rotation in (pitch, yaw, roll) to the camera orientation from (-20,20) degrees to simulate the independent movement of eye and head, and then use a built-in function to project the scanpath point onto the image plane to find the 2D position of the focal point in image space. Each frame is then rendered to a folder, and the goal position on the scanpath is pushed forward by some amount, until the end of scanpath is finally reached. For most scenes, it takes around 3 minutes to generate the entire dataset of typically 1000 480x480px frames.
+the scene and eventually causing the camera to turn 360 degrees. The scanpath is defined manually (although could be generated automatically with a list of intended objects to focus on) using a cubic Bezier spline, which is natively supported in UE4. This process is the reverse of the typical eye-tracking goal, which is normally to find the scanpath itself from images instead of the other way around. Using built-in spline functions in UE4, we get the 3D position on the scanpath towards which the eye should focus for that frame, apply a random rotation in (pitch, yaw, roll) to the camera orientation from (-20,20) degrees to simulate the independent movement of eye and head, and then use a built-in function to project the scanpath point onto the image plane to find the 2D position of the focal point in image space. Each frame is then rendered to a folder, and the goal position on the scanpath is pushed forward by some amount, until the end of scanpath is finally reached. For most scenes, it takes around 3 minutes to generate the entire dataset of typically 1000 480x480px frames.
 
 To generate the labels, we store a translation table describing the correspondence from prop to a simplified label (some of which to not exist in ImageNet; these would be for future use or for other datasets) to an ImageNet label (if one exists). In most cases, the props' filenames contain some substring of the label used in ImageNet, otherwise, the table also contains exceptions, including props that we do not want to label at all for whatever reason. For props that contain multiple labels in their name (e.g. "SM\_Pineapple" includes both "apple" and "pineapple"), we use the label that has more matching letters, which we assume to be a better description (if not, an exception entry is created). This precomputation of pairings, substrings, etc. is done once per compile of our data generator script in UE4, adding only about 3 seconds to compile time. There is a small amount of manual labor involved in making entries to this table, but after this is done for the first time, most (meaning usually hundreds of) props are auto-labelled correctly in any new scene with props that are named decently well. We currently store 175 entries in this table, including exceptions, which translate thousands of different meshes in the synthetic data generation project to labels.
 
@@ -154,7 +156,7 @@ For each original image, we created two blurred images. Each uses a ``circular''
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Training \& Recognition}
 The training and recognition step involves using the popular Inception V3
-network to recognize the primary object in the images given to the network.
+network, fine-tuned on the ImageNet dataset, to recognize the primary object in the images given to the network.
 Since the game engine generates the labels automatically, the ground truth
 labels were retrieved easily and were given to the network as with any other use
 of this network, with the additional step of translating from the simplified labels to whatever the particular dataset, e.g. ImageNet, uses. Beyond that, this step was fairly standard image recognition and

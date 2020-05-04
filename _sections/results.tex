@@ -1,16 +1,18 @@
 \section{Results}
-DSCDSSF
-% summarize current quantitative/qualitative results
-!!!!!!!!!!!!!!!HOW MANY IMAGES NICK GENERATES AT 480P. 
-HOW LONG IT TAKES. 
-APPARATUS USED
-\section{Analysis \& Discussion}
+\subsection{Apparatus}
+The PC specifications used for generation of the synthetic dataset are: Intel i9-9900k CPU, GTX1080 GPU, 64GB RAM. Each dataset takes up around 300-600mb and contain around 1000 480x480px images each. The UE4 project used for generation is about 19GB, including cached assets. Each dataset takes about 2-3 minutes to render at 25fps, which is significantly faster than could be rendered in the typical non-game-engine fashion of using a 3D modelling program like Blender (which, in previous research, can take at least days to generate a similarly-sized dataset). The prediction is done on a server with 4 GTX1080Ti and CUDA 10.2.
+\subsection{Quantitative Results}
+\paragraph{Individual Predictions} mention that individual inception predictions seem reasonable (e.g. rocking chair). Was getting 80\%+ accuracy for things that are labelled and clearly in view. Smaller objects, such as screwdrivers, had 50\% screwdriver confident, with syringe being second, but since syringe isn't in the ue4 dataset, it would be scrapped for now.
+\paragraph{Dataset Performance}
+\section{Analysis \& Discussion, \& Limitations}
 SCDSSDCDS
 % discussion of meaning of results
 !!!!!!!!!!!!!!DON'T USE IMAGENET
 !!!!!!!!!480P NOT ENOUGH TO CROP WELL
 !!!!!!!!!!NEED FOR MORE STORAGE
-COULDN'T COMPARE AND ANALYZE EFFECT OF PARTICLES, POST-PROCESS, ETC. BUT THE DATA IS GENERATED AND MADE PUBLIC
-\subsection{Limitations}
-IMAGENET MISSING MANY USEFUL OBJECTS OF INTEREST. IN HINDSIGHT WOULDN'T HAVE USED IT
+COULDN'T COMPARE AND ANALYZE EFFECT OF PARTICLES, POST-PROCESS, ETC. BUT THE DATA IS GENERATED AND MADE PUBLIC which we anticipate to be a great contribution as this dataset doesn't exist and can help make better applications for these recent AR devices like magicleap and hololens 2.  
+
+can generate behavior graphs if we can find errors in the dataset performance.
+
+IMAGENET MISSING MANY USEFUL OBJECTS OF INTEREST. IN HINDSIGHT WOULDN'T HAVE USED IT or used multiple pretrained datasets
 too many images are generated for bigger objects since it exports every frame, so more weight is applied to the bigger objects is they are predicted incorrectly (which is very likely as we are mostly recognizing smaller objects)
